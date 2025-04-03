@@ -1,0 +1,135 @@
+### Registro de usuario
+POST http://localhost:3000/routes/auth/registro
+Content-Type: application/json
+
+{
+    "email": "prueba@gmail.com",
+    "password": "123456789"
+}
+
+###
+### Validación de código de email
+POST http://localhost:3000/routes/auth/validacion
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+    "email": "prueba@gmail.com",
+    "code": "995517"
+}
+
+###
+### Login
+POST http://localhost:3000/routes/auth/login
+Content-Type: application/json
+
+{
+    "email": "prueba@gmail.com",
+    "password": "123456789"
+}
+
+###
+### Onboarding de usuario
+PUT http://localhost:3000/routes/users/register
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+    "email": "prueba@gmail.com",
+    "nombre": "Prueba",
+    "apellido": "3",
+    "nif":"12345678"
+}
+
+###
+### Registro de empresa
+PATCH http://localhost:3000/routes/users/company
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+    "email": "prueba@gmail.com",
+    "esAutonomo": false,
+    "company": {
+        "nombre": "prueba",
+        "cif": "nif prueba",
+        "direccion": "direccion prueba",
+        "provincia": "ProvinciaPrueba",
+        "pais": "PaisPrueba"
+    }
+}
+
+###
+### Subida de imagen
+PATCH http://localhost:3000/routes/storage
+Content-Type: multipart/form-data; boundary=boundary123
+Authorization: Bearer <TOKEN_JWT>
+
+--boundary123
+Content-Disposition: form-data; name="email"
+
+prueba@gmail.com
+--boundary123
+Content-Disposition: form-data; name="image"; filename="talcualhermano.png"
+Content-Type: image/jpeg
+
+< ./talcualhermano.png
+--boundary123--
+
+###
+### Obtener todos los usuarios
+GET http://localhost:3000/routes/users
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+###
+### Obtener un usuario por email
+GET http://localhost:3000/routes/users/prueba@gmail.com
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+###
+### Eliminar usuario (soft delete)
+DELETE http://localhost:3000/routes/users/prueba@gmail.com?soft=true
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+###
+### Invitar usuario
+POST http://localhost:3000/routes/users/invite
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+    "email": "prueba1@gmail.com",
+    "password": "123456789",
+    "nombre": "Prueba",
+    "apellido": "3",
+    "nif":"12345678",
+    "esAutonomo": false,
+    "company": {
+        "nombre": "prueba",
+        "cif": "nif prueba",
+        "direccion": "direccion prueba",
+        "provincia": "ProvinciaPrueba",
+        "pais": "PaisPrueba"
+    }
+}
+
+###
+### Petición de recuperación de contraseña
+POST http://localhost:3000/routes/users/recuperar/peticion/prueba@gmail.com
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+###
+### Confirmación de recuperación
+POST http://localhost:3000/routes/users/recuperar/confirmar
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+    "email": "prueba@gmail.com",
+    "codigo": "hi8zlkt5",
+    "nuevaContraseña": "afsdasfdasfd"
+}
