@@ -111,3 +111,42 @@ test('incluirItem incluye los datos del usuario correctamente', async() =>{
 })
 
 //Test para obtener los datos del usuario
+
+test('obtenerDatos muestra los datos de los usuarios', async() =>{
+    test('obtenerDatos muestra los datos de los usuarios', async () => {
+        const mockUsers = [
+          { email: 'test@example.com', nombre: 'Usuario Test 1' },
+          { email: 'otro@example.com', nombre: 'Usuario Test 2' }
+        ];
+      
+        UserModel.find.mockResolvedValue(mockUsers);
+      
+        const res = await request(app)
+          .get('/');
+      
+        expect(res.status).toBe(200);
+        expect(res.body).toHaveLength(2);
+        expect(res.body[0].email).toBe('test@example.com');
+        expect(res.body[1].email).toBe('otro@example.com');
+      });
+});
+
+//Test para obtener los datos de un usuario
+
+test('obtenerDato muestra los datos de un usuario', async()=>{
+    const mockUser = {
+        email: 'test@example.com',
+        nombre: 'Usuario Test 1',
+        apellido: 'Apellido Test'
+      };
+    
+    UserModel.findOne.mockResolvedValue(mockUser);
+
+    const res = await request(app)
+    .get("/test@example.com");
+
+    expect(res.status).toBe(200);
+    expect(res.body.email).toBe('test@example.com');
+    expect(res.body.nombre).toBe('Usuario Test 1');
+
+});
