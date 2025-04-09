@@ -194,5 +194,50 @@ test('recuperarCuenta restaura correctamente la cuenta del usuario', async () =>
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe('test@example.com');
     expect(res.body.user.deleted).toBe(false);
+});
+
+//Test para invitar a un usuario a formar parte de la compañia
+test('invitar crea e invita correctamente a un nuevo usuario a la compañía', async () => {
+    const mockCompany = {
+      _id: 'company123',
+      nombre: 'Empresa Ejemplo',
+      cif: 'B12345678',
+      direccion: 'Dirección Ejemplo',
+      provincia: 'Provincia Ejemplo',
+      pais: 'País Ejemplo'
+    };
+  
+    const mockNuevoUsuario = {
+      email: "test@example.com",
+      estadoValidacion: "noValidado",
+      role: ["guest"],
+      companyId: mockCompany._id
+    };
+  
+    UserModel.findOne.mockResolvedValue(null);
+    CompanyModel.findOne.mockResolvedValue(mockCompany);
+    UserModel.create.mockResolvedValue(mockNuevoUsuario);
+  
+    const res = await request(app)
+      .post('/invite')
+      .send({
+        email: "test@example.com",
+        password: "contraseñaSegura123",
+        company: {
+          nombre: "Empresa Ejemplo",
+          cif: "B12345678",
+          direccion: "Dirección Ejemplo",
+          provincia: "Provincia Ejemplo",
+          pais: "País Ejemplo"
+        }
+      });
+  
+    expect(res.status).toBe(201);
+    expect(res.body.email).toBe('test@example.com');
+    expect(res.body.role).toContain('guest');
+    expect(res.body.Verificado).toBe('noValidado');
+    expect(res.body.company).toBe(mockCompany._id);
+    expect(res.body.token).toBeDefined();
   });
+  
 
