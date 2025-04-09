@@ -179,5 +179,20 @@ test('eliminarDato realiza un hard delete correctamente', async () => {
     expect(res.body.message).toBe('Usuario eliminado permanentemente');
 });
 
-//
+//Test para recuperar la cuenta del usuario.
+test('recuperarCuenta restaura correctamente la cuenta del usuario', async () => {
+    const mockUser = {
+      email: "test@example.com",
+      deleted: false
+    };
+  
+    UserModel.findOneAndUpdate.mockResolvedValue(mockUser);
+  
+    const res = await request(app)
+      .put('/recoverAccount/test@example.com');
+  
+    expect(res.status).toBe(200);
+    expect(res.body.user.email).toBe('test@example.com');
+    expect(res.body.user.deleted).toBe(false);
+  });
 
