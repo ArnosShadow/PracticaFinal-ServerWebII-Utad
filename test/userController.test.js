@@ -53,7 +53,7 @@ test('actualizarItem actualiza los datos del usuario correctamente', async () =>
     UserModel.findOneAndUpdate.mockResolvedValue(mockUser);
   
     const res = await request(app)
-      .post('/actualizar')
+      .put('/register')
       .send({
         email: 'test@example.com',
         nombre: 'Nuevo',
@@ -65,4 +65,49 @@ test('actualizarItem actualiza los datos del usuario correctamente', async () =>
     expect(res.body.nombre).toBe('Nuevo');
 });
 
-  
+//Test para incluir usuario
+test('incluirItem incluye los datos del usuario correctamente', async() =>{
+    const mockCompany = {
+        _id: 'comp123',
+        nombre: 'Empresa Ejemplo',
+        cif: 'B12345678',
+        direccion: 'Dirección Ejemplo',
+        provincia: 'Provincia Ejemplo',
+        pais: 'País Ejemplo'
+    };
+
+    const mockUser = {
+        _id: '1',
+        email: 'test@example.com',
+        nombre: 'Nuevo',
+        apellido: 'Nombre',
+        nif: '12345678A',
+        estadoValidacion: 'validado',
+        role: ['user'],
+        companyId: mockCompany._id
+    };
+
+    UserModel.findOne.mockResolvedValue(mockUser);
+    CompanyModel.create.mockResolvedValue(mockCompany);
+    UserModel.findOneAndUpdate.mockResolvedValue(mockUser)
+    
+    const res = await request(app)
+    .patch('/company')
+    .send({
+        email: 'test@example.com',
+        esAutonomo: false,
+        company: {
+          nombre: 'Empresa Ejemplo',
+          cif: 'B12345678',
+          direccion: 'Dirección Ejemplo',
+          provincia: 'Provincia Ejemplo',
+          pais: 'País Ejemplo'
+        }
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.email).toBe('test@example.com');
+    expect(res.body.company.nombre).toBe('Empresa Ejemplo');
+})
+
+//Test para obtener los datos del usuario
