@@ -150,3 +150,34 @@ test('obtenerDato muestra los datos de un usuario', async()=>{
     expect(res.body.nombre).toBe('Usuario Test 1');
 
 });
+
+//Test para eliminar datos de un usuario soft = true.
+test('eliminarDato elimina los datos de un usuario', async()=>{
+    const mockUser={
+        email: 'test@example.com',
+        deleted: true
+    };
+    UserModel.findOneAndUpdate.mockResolvedValue(mockUser);
+
+    const res = await request()
+    .delete('/test@example.com')
+    .query({ soft: 'true' }); 
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toContain('Usuario desactivado (soft delete)');
+})
+
+//Test para eliminar un usuario soft = false
+test('eliminarDato realiza un hard delete correctamente', async () => {
+    UserModel.deleteOne.mockResolvedValue({ deletedCount: 1 });
+  
+    const res = await request(app)
+      .delete('/test@example.com')
+      .query({ soft: 'false' });
+  
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Usuario eliminado permanentemente');
+});
+
+//
+
