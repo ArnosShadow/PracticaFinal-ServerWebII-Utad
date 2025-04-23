@@ -240,4 +240,46 @@ test('invitar crea e invita correctamente a un nuevo usuario a la compañía', a
     expect(res.body.token).toBeDefined();
   });
   
+//Test para enviar peticion para la restauracion de la contraseña.
+test('enviarPeticion genera y devuelve un código de recuperación', async () => {
+  const mockUser = {
+    email: 'test@example.com',
+    codigoVerificacion: 'abc12345'
+  };
 
+  UserModel.findOneAndUpdate.mockResolvedValue(mockUser);
+
+  const res = await request(app)
+    .get('/solicitar/test@example.com');
+
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Codigo para test@example.com');
+});
+
+
+test('confirmarPeticion cambia la contraseña correctamente si el código es válido', async () => {
+  const nuevaPasswordCifrada = 'hashedPassword123';
+
+  const mockUser = {
+    email: 'test@example.com',
+    password: nuevaPasswordCifrada,
+    codigoVerificacion: 'abc12345'
+  };
+
+  // Mock de `cifrar`
+  cifrar.mockResolvedValue(nuevaPasswordCifrada);
+
+  // Este usuario tiene el mismo código que el que vamos a pasar en el test
+  UserModel.findOneAndUpdate.mockResolvedValue({ ...mockUser, codigoVerificacion: 'abc12345' });
+
+  const res = await request(app)
+    .post('/confirmar')
+    .send({
+      email: 'test@example.com',
+      codigo: 'abc12345',
+      nuevaContraseña: 'nueva123'
+    });
+
+  expect(res.status).toBe(200);
+  expect(res.text).toContain(`La contraseña para test@example.com`);
+});
