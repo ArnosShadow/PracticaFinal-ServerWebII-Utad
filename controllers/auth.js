@@ -4,6 +4,7 @@ const { handleHttpError } = require("../utils/handleError");
 const {JWTSign } =require("../utils/handleJWT");
 const {cifrar, descrifrarComparar} = require("../utils/handlePassword");
 const {comprobarVerificadoEmail} = require("../utils/handleVerificador");
+const { sendEmail } = require("../utils/handleEmail");
 
 
 const createItem = async(req, res) =>{
@@ -34,7 +35,14 @@ const createItem = async(req, res) =>{
         console.log(body);
         const result =await AuthModel.create(body);
         console.log("Recurso creado: "+result);
-
+        
+        // Enviar el código por correo
+        await sendEmail({
+            to: body.email,
+            from: process.env.EMAIL,
+            subject: "Código de validación",
+            text: `Tu código de validación es: ${codigoAleatorio}`
+        });
         // Generamos un token para pasarselo a nuestro usuario.
         const token=await JWTSign(result);
 

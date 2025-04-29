@@ -162,6 +162,13 @@ const invitar = async (req, res) => {
     // Se generará un código aleatorio de seis dígitos.
     const codigoAleatorio = Math.floor(100000 + Math.random() * 900000);
     
+    await sendEmail({
+      to: email,
+      from: process.env.EMAIL,
+      subject: "Invitación a la compañía",
+      text: `Has sido invitado a unirte. Tu código de validación es: ${codigoAleatorio}`
+    });
+
     const nuevoUsuario = await UserModel.create({
       email:email,
       password: password,
@@ -206,6 +213,14 @@ const enviarPeticion= async (req, res) => {
 
     } 
     console.log(`Codigo para ${email}: ${user.codigoVerificacion}`);
+    
+    await sendEmail({
+      to: email,
+      from: process.env.EMAIL,
+      subject: "Recuperación de cuenta",
+      text: `Tu código de recuperación es: ${user.codigoVerificacion}`
+    });
+    
 
     res.status(200).json( `Codigo para ${email}: ${user.codigoVerificacion}` );
   } catch (err) {
@@ -223,13 +238,17 @@ const confirmarPeticion = async (req, res) => {
     //ciframos la contraseña
     nuevaContraseña=await cifrar(nuevaContraseña);
 
-    const user = await UserModel.findOneAndUpdate({ email}, {password: nuevaContraseña});
-    if (!user || user.codigoVerificacion != codigo){
-      codigo_error=400;
-      descripcion_error="Código inválido o usuario no encontrado";
-      throw err;
+    const user = await UserModel.findOne({ email });
+    if (!user || user.codigoVerificacion !== codigo) {
+      descripcion_error = "Código inválido o usuario no encontrado";
+      codigo_error = 400;
+      throw new Error(descripcion_error);
+    }
 
-    } 
+    // Actualiza solo si pasó la validación
+    user.password = nuevaContraseña;
+    await user.save();
+    
     
 
     res.status(200).json( `La contraseña para ${email}: ${ user.password}` );
