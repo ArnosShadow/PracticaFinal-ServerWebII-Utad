@@ -67,4 +67,28 @@ const getClientById = async (req, res) => {
   }
 };
 
-module.exports = {createClient, getClients, getClientById};
+
+const updateClient = async (req, res) => {
+  let descripcion_error = "ERROR_GET_CLIENTES";
+  let code_error = 500;
+
+  try {
+    const cliente = await ClientModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    
+    if (!cliente) {
+      descripcion_error = "Cliente no encontrado";
+      code_error = 404;
+      throw new Error("No existe el cliente");
+    }
+
+    res.status(200).json(cliente);
+  } catch (err) {
+    handleHttpError(res, descripcion_error, code_error);
+  }
+};
+
+module.exports = {createClient, getClients, getClientById,updateClient};
