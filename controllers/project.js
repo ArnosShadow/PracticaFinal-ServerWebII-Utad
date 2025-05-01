@@ -30,9 +30,23 @@ const createProject = async (req, res) => {
     } catch (err) {
       handleHttpError(res, descripcion_error, code_error);
     }
-  };
+};
 
 
+const getProjects = async (req, res) => {
+    let descripcion_error = "ERROR_GET_PROJECTS";
+    let code_error = 500;
+    try {
+        const userId = req.user.id;
+        const proyectos = await ProjectModel.find({
+            archivado: false,
+            userId
+        });
+        res.status(200).json(proyectos);
+    } catch (err) {
+        handleHttpError(res,descripcion_error , code_error);
+    }
+};
 
 
-module.exports = {createProject};
+module.exports = {createProject, getProjects};
