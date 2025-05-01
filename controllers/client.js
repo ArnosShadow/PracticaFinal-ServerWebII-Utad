@@ -69,7 +69,7 @@ const getClientById = async (req, res) => {
 
 
 const updateClient = async (req, res) => {
-  let descripcion_error = "ERROR_GET_CLIENTES";
+  let descripcion_error = "ERROR_ACTUALIZAR_CLIENTES";
   let code_error = 500;
 
   try {
@@ -93,7 +93,7 @@ const updateClient = async (req, res) => {
 
 const deleteClient = async(req, res) =>{
 
-  let descripcion_error = "ERROR_GET_CLIENTES";
+  let descripcion_error = "ERROR_DELETE_CLIENTE";
   let code_error = 500;
 
   try {
@@ -132,5 +132,26 @@ const deleteClient = async(req, res) =>{
 }
 
 
+const restoreClient = async (req, res) => {
+  let descripcion_error = "ERROR_RESTAURAR_CLIENTES";
+  let code_error = 500;
+  try {
+    const cliente = await ClientModel.findByIdAndUpdate(
+      req.params.id,
+      { archivado: false },
+      { new: true }
+    );
 
-module.exports = {createClient, getClients, getClientById,updateClient,deleteClient};
+    if (!cliente) {
+      descripcion_error = "Cliente no encontrado";
+      code_error = 404;
+      throw new Error("No existe el cliente");
+    }
+
+    res.status(200).json({ message: "Cliente restaurado", cliente });
+  } catch (err) {
+    handleHttpError(res, descripcion_error, code_error);
+  }
+};
+
+module.exports = {createClient, getClients, getClientById,updateClient,deleteClient, restoreClient};
