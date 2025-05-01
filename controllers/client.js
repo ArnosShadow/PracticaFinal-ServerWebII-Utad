@@ -154,4 +154,21 @@ const restoreClient = async (req, res) => {
   }
 };
 
-module.exports = {createClient, getClients, getClientById,updateClient,deleteClient, restoreClient};
+const getArchivedClients = async (req, res) => {
+  let descripcion_error = "ERROR_GET_CLIENTES_ARCHIVADOS";
+  let code_error = 500;
+  try {
+    const userId = req.user.id;
+
+    const clientesArchivados = await ClientModel.find({
+      archivado: true,
+      userId: userId
+    });
+
+    res.status(200).json(clientesArchivados);
+  } catch (err) {
+    handleHttpError(res, descripcion_error , code_error);
+  }
+};
+
+module.exports = {createClient, getClients, getClientById,updateClient,deleteClient, restoreClient, getArchivedClients};
