@@ -3,6 +3,8 @@ const UserModel = require("../models/users");
 const { handleHttpError } = require("../utils/handleError");
 
 const createClient = async (req, res) => {
+  let description_error= "ERROR_CREATE_CLIENTE";
+  let code_error = 500;
   try {
     const userId = req.user.id;
     const user = await UserModel.findById(userId);
@@ -13,7 +15,11 @@ const createClient = async (req, res) => {
       userId: userId
     });
 
-    if (existe) return handleHttpError(res, "Cliente ya registrado", 409);
+    if (existe) {
+      description_error= "Cliente ya registrado";
+      code_error= 409;
+      throw new Error("El cliente ya existia");
+    }
 
     const nuevoCliente = await ClientModel.create({
       ...req.body,
@@ -23,8 +29,10 @@ const createClient = async (req, res) => {
 
     res.status(201).json(nuevoCliente);
   } catch (err) {
-    handleHttpError(res, "ERROR_CREATE_CLIENTE", 500);
+    handleHttpError(res, description_error, code_error);
   }
 };
+
+
 
 module.exports = {createClient};
