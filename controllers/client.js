@@ -91,4 +91,46 @@ const updateClient = async (req, res) => {
   }
 };
 
-module.exports = {createClient, getClients, getClientById,updateClient};
+const deleteClient = async(req, res) =>{
+
+  let descripcion_error = "ERROR_GET_CLIENTES";
+  let code_error = 500;
+
+  try {
+    const { id } = req.params;
+    const { soft } = req.query;
+
+    if(soft !=='false'){
+      const cliente = await ClientModel.findByIdAndUpdate(
+        id,
+        { archivado: true },
+        { new: true }
+      );
+      if (!cliente) {
+        descripcion_error = "Cliente no encontrado";
+        code_error = 404;
+        throw new Error("No existe el cliente");
+      }  
+      res.status(200).json({ message: "Cliente archivado (soft delete)", cliente });
+    }else{
+      const cliente = await ClientModel.findByIdAndDelete(id);
+      
+      if (!cliente) {
+        descripcion_error = "Cliente no encontrado";
+        code_error = 404;
+        throw new Error("No existe el cliente");
+      }
+
+      res.status(200).json({ message: "Cliente eliminado permanentemente" });
+
+    }
+    
+  } catch (error) {
+      handleHttpError(res, descripcion_error, code_error);
+  }
+
+}
+
+
+
+module.exports = {createClient, getClients, getClientById,updateClient,deleteClient};
