@@ -19,6 +19,13 @@ const authMiddleware = async (req, res, next)=>{
             descripcion_error= "ERROR_TOKEN: ";
             throw err;
         }
+
+        req.user = {
+            id: decoded.id,
+            email: decoded.email,
+            role: decoded.role
+          };
+
         next();
 
     }catch(err){
