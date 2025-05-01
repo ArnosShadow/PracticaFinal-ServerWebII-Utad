@@ -47,6 +47,20 @@ const getProjects = async (req, res) => {
         handleHttpError(res,descripcion_error , code_error);
     }
 };
+const getProjectById = async (req, res) => {
+    let descripcion_error = "ERROR_GET_PROJECT";
+    let code_error = 500;
+    try {
+      const proyecto = await ProjectModel.findById(req.params.id);
+      if (!proyecto){
+        descripcion_error="Proyecto no encontrado";
+        code_error=404;
+        throw new Error("Proyecto no encontrado");
+      } 
+      res.status(200).json(proyecto);
+    } catch (err) {
+      handleHttpError(res,descripcion_error , code_error);
+    }
+};
 
-
-module.exports = {createProject, getProjects};
+module.exports = {createProject, getProjects, getProjectById};
