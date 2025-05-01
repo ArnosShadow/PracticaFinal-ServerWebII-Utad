@@ -3,11 +3,12 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/authMiddleware");
 const handleValidator = require("../utils/handleValidator");
 const { projectValidator } = require("../validator/project");
-const {createProject, getProjectById, getProjects} = require("../controllers/project");
+const {createProject, getProjectById, getProjects, updateProject} = require("../controllers/project");
 
 
 router.post("/", authMiddleware, projectValidator, handleValidator, createProject);
 router.get("/",authMiddleware, getProjects);
+router.put("/:id", projectValidator, handleValidator, updateProject);
 router.get("/:id",authMiddleware, getProjectById);
 
 
