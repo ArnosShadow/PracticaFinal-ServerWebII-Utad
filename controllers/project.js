@@ -118,7 +118,30 @@ const deleteProject = async (req, res) => {
   }
 };
 
+const restoreProject = async (req, res) =>{
+  let descripcion_error = "ERROR_RESTORE_PROJECT";
+  let code_error = 500;
+
+  try {
+    const { id } = req.params;
+    const proyecto = await ProjectModel.findByIdAndUpdate(
+      id,
+      { archivado: false },
+      { new: true }
+    );
+
+    if(!proyecto){
+      descripcion_error = "Proyecto no encontrado";
+      code_error=404 ;
+      throw new Error("Proyecto no encontrado");
+    }
+    res.status(200).json({ message: "Proyecto restaurado", proyecto });
+
+  } catch (error) {
+    handleHttpError(res, descripcion_error, code_error);
+  }
+}
 
 
 
-module.exports = {createProject, getProjects, getProjectById, updateProject, deleteProject};
+module.exports = {createProject, getProjects, getProjectById, updateProject, deleteProject, restoreProject};
