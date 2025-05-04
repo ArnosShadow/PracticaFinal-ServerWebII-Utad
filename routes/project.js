@@ -3,7 +3,7 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/authMiddleware");
 const handleValidator = require("../utils/handleValidator");
 const { projectValidator } = require("../validator/project");
-const {createProject, getProjectById, getProjects, updateProject, deleteProject,restoreProject} = require("../controllers/project");
+const {createProject, getProjectById, getProjects, updateProject, deleteProject,restoreProject,getArchivedProject} = require("../controllers/project");
 
 
 router.post("/", authMiddleware, projectValidator, handleValidator, createProject);

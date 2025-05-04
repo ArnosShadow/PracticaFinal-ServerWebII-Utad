@@ -142,6 +142,26 @@ const restoreProject = async (req, res) =>{
   }
 }
 
+const getArchivedProject = async(req, res) =>{
+  let descripcion_error ="ERROR_GETARCHIVED_PROJECT";
+  let code_error=500;
+  try {
+    const proyecto = await ProjectModel.find(
+      { archivado: true }
+    );
+
+    if(!proyecto){
+      descripcion_error = "No hay proyectos encontrados";
+      code_error=404 ;
+      throw new Error("No hay proyectos encontrados");
+    }
+
+    res.status(200).json({ message: "Proyectos encontrados", proyecto });
+  } catch (error) {
+    handleHttpError(res, descripcion_error, code_error)
+  }
+
+}
 
 
-module.exports = {createProject, getProjects, getProjectById, updateProject, deleteProject, restoreProject};
+module.exports = {createProject, getProjects, getProjectById, updateProject, deleteProject, restoreProject, getArchivedProject};
