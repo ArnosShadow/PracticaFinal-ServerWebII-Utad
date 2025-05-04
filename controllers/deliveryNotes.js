@@ -138,6 +138,23 @@ const restoreDeliveryNote = async (req, res) => {
       handleHttpError(res, descripcion_error, code_error);
     }
 };
-module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote };
+
+const getArchivedDeliveryNotes = async (req, res) => {
+    let descripcion_error ="ERROR_GET_ARCHIVED_DELIVERY_NOTES";
+    let code_error = 500;
+    try {
+      const userId = req.user.id;
+  
+      const archivados = await DeliveryNoteModel.find({
+        archivado: true,
+        userId
+      });
+  
+      res.status(200).json(archivados);
+    } catch (err) {
+      handleHttpError(res, descripcion_error, code_error);
+    }
+  };
+module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes };
 
 
