@@ -5,7 +5,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const handleValidator = require("../utils/handleValidator");
 const { deliveryNoteValidator } = require("../validator/deliverynotesValidator");
 
-const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote} = require("../controllers/deliveryNotes");
+const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote} = require("../controllers/deliveryNotes");
 
 
 
@@ -13,5 +13,5 @@ router.post("/",authMiddleware, deliveryNoteValidator, handleValidator, createDe
 router.get("/", authMiddleware, getDeliveryNotes);
 router.get("/:id", authMiddleware, getDeliveryNoteById);
 router.put("/:id", authMiddleware,deliveryNoteValidator, handleValidator,  updateDeliveryNote);
-
+router.delete("/:id", deleteDeliveryNote);
 module.exports = router;

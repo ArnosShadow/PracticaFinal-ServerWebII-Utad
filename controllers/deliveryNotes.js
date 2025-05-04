@@ -75,7 +75,7 @@ const updateDeliveryNote = async (req, res) => {
         code_error= 404;
         throw new Error("Albaran no encontrado");
       }
-      
+
       const nota = await DeliveryNoteModel.findByIdAndUpdate(
         req.params.id,
         req.body,
@@ -88,6 +88,38 @@ const updateDeliveryNote = async (req, res) => {
     }
 };
 
-module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote};
+const deleteDeliveryNote = async (req, res) => {
+    let descripcion_error = "ERROR_DELETE_DELIVERY_NOTE";
+    let code_error = 500;
+    try {
+      const { id } = req.params;
+      const { soft } = req.query;
+  
+      const albaran = await DeliveryNoteModel.findById(id);
+      if (!albaran){
+        descripcion_error = "Albaran no encontrado";
+        code_error=404;
+        throw new Error("Albaran no encontrado"); 
+      }
+      if (albaran.firmado){
+        descripcion_error = "No se puede eliminar un albaran firmado";
+        code_error = 403;
+        throw new Error("No se puede eliminar un albaran firmado");
+      } 
+  
+      if (soft !== "false") {
+        albaran.archivado = true;
+        await albaran.save();
+        res.status(200).json({ message: "Albarán archivado", albaran});
+      } else {
+        await DeliveryNoteModel.findByIdAndDelete(id);
+        res.status(200).json({ message: "Albarán eliminado definitivamente" });
+      }
+    } catch (err) {
+      handleHttpError(res, descripcion_error, code_error);
+    }
+};
+
+module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote };
 
 
