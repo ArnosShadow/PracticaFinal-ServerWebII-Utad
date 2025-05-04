@@ -10,6 +10,13 @@ const createDeliveryNote = async (req, res) => {
       const userId = req.user.id;
       const user = await UserModel.findById(userId);
   
+      if (!user) {
+        descripcion_error = "Usuario no encontrado";
+        code_error= 404;
+        throw new Error("Usuario no encontrado"); 
+      }
+
+
       const nuevoAlbaran = await DeliveryNoteModel.create({
         ...req.body,
         userId,
@@ -22,6 +29,23 @@ const createDeliveryNote = async (req, res) => {
     }
 };
 
-module.exports = {createDeliveryNote};
+const getDeliveryNotes = async (req, res) => {
+    let descripcion_error = "ERROR_GET_DELIVERY_NOTES";
+    let code_error = 500;
+    try {
+      const userId = req.user.id;
+  
+      const notas = await DeliveryNoteModel.find({
+        archivado: false,
+        userId
+      }).populate("clientId projectId userId");
+  
+      res.status(200).json(notas);
+    } catch (err) {
+      handleHttpError(res, descripcion_error, code_error);
+    }
+};
+
+module.exports = {createDeliveryNote, getDeliveryNotes};
 
 
