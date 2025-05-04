@@ -64,6 +64,30 @@ const getDeliveryNoteById = async (req, res) => {
     }
 };
 
-module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById};
+const updateDeliveryNote = async (req, res) => {
+    let descripcion_error = "ERROR_UPDATE_DELIVERY_NOTE";
+    let code_error = 500;
+
+    try {
+      const notaExistente = await DeliveryNoteModel.findById(req.params.id);
+      if (!notaExistente) {
+        descripcion_error= "Albaran no encontrado";
+        code_error= 404;
+        throw new Error("Albaran no encontrado");
+      }
+      
+      const nota = await DeliveryNoteModel.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      );
+  
+      res.status(200).json(nota);
+    } catch (err) {
+      handleHttpError(res, descripcion_error, code_error);
+    }
+};
+
+module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote};
 
 
