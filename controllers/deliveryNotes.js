@@ -38,7 +38,7 @@ const getDeliveryNotes = async (req, res) => {
       const notas = await DeliveryNoteModel.find({
         archivado: false,
         userId
-      }).populate("clientId projectId userId");
+      });
   
       res.status(200).json(notas);
     } catch (err) {
