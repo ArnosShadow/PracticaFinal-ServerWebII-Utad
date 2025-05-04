@@ -119,7 +119,25 @@ const deleteDeliveryNote = async (req, res) => {
       handleHttpError(res, descripcion_error, code_error);
     }
 };
-
-module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote };
+const restoreDeliveryNote = async (req, res) => {
+    let descripcion_error = "ERROR_RESTORE_DELIVERY_NOTE";
+    let code_error = 500;
+    try {
+      const nota = await DeliveryNoteModel.findByIdAndUpdate(
+        req.params.id,
+        { archivado: false },
+        { new: true }
+      );
+      if (!nota){
+        descripcion_error = "Albarán no encontrado";
+        code_error = 404;
+        throw new Error("Albarán no encontrado");
+      }
+      res.status(200).json({ message: "Albarán restaurado", nota });
+    } catch (err) {
+      handleHttpError(res, descripcion_error, code_error);
+    }
+};
+module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote };
 
 
