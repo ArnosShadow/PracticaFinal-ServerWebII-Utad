@@ -78,12 +78,47 @@ const updateProject = async (req, res) => {
         code_error= 404;
         throw new Error("Proyecto no encontrado");
       }
-      
+
       res.status(200).json(proyecto);
     } catch (err) {
-      handleHttpError(res, "ERROR_UPDATE_PROJECT", 500);
+      handleHttpError(res, descripcion_error, code_error);
     }
 };
 
+const deleteProject = async (req, res) => {
+  let descripcion_error = "ERROR_DELETE_PROJECT";
+  let code_error = 500;
+  try {
+    const { id } = req.params;
+    const { soft } = req.query;
 
-module.exports = {createProject, getProjects, getProjectById, updateProject};
+    if (soft !== "false") {
+      const proyecto = await ProjectModel.findByIdAndUpdate(
+        id,
+        { archivado: true },
+        { new: true }
+      );
+      if (!proyecto) {
+        descripcion_error = "Proyecto no encontrado";
+        code_error = 404;
+        throw new Error("Proyecto no encontrado"); 
+      }
+      res.status(200).json({ message: "Proyecto archivado", proyecto });
+    } else {
+      const proyecto = await ProjectModel.findByIdAndDelete(id);
+      if (!proyecto) {
+        descripcion_error = "Proyecto no encontrado";
+        code_error = 404;
+        throw new Error("Proyecto no encontrado"); 
+      }
+      res.status(200).json({ message: "Proyecto eliminado definitivamente" });
+    }
+  } catch (err) {
+    handleHttpError(res, descripcion_error, code_error);
+  }
+};
+
+
+
+
+module.exports = {createProject, getProjects, getProjectById, updateProject, deleteProject};
