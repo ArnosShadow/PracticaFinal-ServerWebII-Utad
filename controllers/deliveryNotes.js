@@ -48,16 +48,19 @@ const getDeliveryNotes = async (req, res) => {
     }
 };
 
-
 const getDeliveryNoteById = async (req, res) => {
     let descripcion_error = "ERROR_GET_DELIVERY_NOTE";
     let code_error = 500;
     try {
-      const nota = await DeliveryNoteModel.findById(req.params.id);
+      const nota = await DeliveryNoteModel.findById(req.params.id)
+      .populate("userId")
+      .populate("clientId")
+      .populate("projectId");
+
       if (!nota){
         code_error=404;
-        descripcion_error = "Albarán no encontrado";
-        throw new Error("Albarán no encontrado");
+        descripcion_error = "Albaran no encontrado";
+        throw new Error("Albaran no encontrado");
       }
 
       res.status(200).json(nota);

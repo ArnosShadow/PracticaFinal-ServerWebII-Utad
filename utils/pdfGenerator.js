@@ -53,7 +53,6 @@ const generarBufferPDF = (nota) => {
         doc.text("Error al cargar la imagen de la firma.");
       }
     }
-
     doc.end();
   });
 };
