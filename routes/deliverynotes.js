@@ -4,8 +4,12 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/authMiddleware");
 const handleValidator = require("../utils/handleValidator");
 const { deliveryNoteValidator } = require("../validator/deliverynotesValidator");
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes} = require("../controllers/deliveryNotes");
+
+const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes,firmarDeliveryNote} = require("../controllers/deliveryNotes");
 
 
 
@@ -16,5 +20,6 @@ router.put("/:id", authMiddleware,deliveryNoteValidator, handleValidator,  updat
 router.delete("/:id",authMiddleware, deleteDeliveryNote);
 router.patch("/restaurar/:id", authMiddleware,restoreDeliveryNote);
 router.get("/archivados", authMiddleware,getArchivedDeliveryNotes);
+router.post("/firmar/:id", authMiddleware, upload.single("firma"), firmarDeliveryNote);
 
 module.exports = router;

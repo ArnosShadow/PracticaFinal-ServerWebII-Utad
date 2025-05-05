@@ -1,7 +1,7 @@
 const ClientModel = require("../models/deliverynote");
 const UserModel = require("../models/users");
 const { handleHttpError } = require("../utils/handleError");
-
+const { uploadToPinata } = require("../utils/handleStorageIPFS");
 
 const createDeliveryNote = async (req, res) => {
     let descripcion_error = "ERROR_CREATE_DELIVERY_NOTE";
@@ -154,7 +154,55 @@ const getArchivedDeliveryNotes = async (req, res) => {
     } catch (err) {
       handleHttpError(res, descripcion_error, code_error);
     }
-  };
-module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes };
+};
+
+const firmarDeliveryNote = async (req, res) => {
+  let descripcion_error = "ERROR_FIRMAR_DELIVERY_NOTE";
+  let code_error=500;
+  try {
+    const { id } = req.params;
+    const fileBuffer = req.file?.buffer;
+    const fileName = req.file?.originalname;
+
+    if (!fileBuffer || !fileName) {
+
+      descripcion_error=  "No se ha subido ninguna firma";
+      code_error = 400;
+      throw new Error("No se ha subido ninguna firma");
+    }
+
+    const deliveryNote = await DeliveryNoteModel.findById(id);
+
+    if (!deliveryNote){
+      descripcion_error=  "Albaran no encontrado";
+      code_error = 404;
+      throw new Error("Albaran no encontrado");
+    }
+    if (deliveryNote.firmado){
+      descripcion_error= "El albaran ya está firmado";
+      code_error = 409;
+      throw new Error("El albaran ya está firmado");
+
+    }
+
+    const pinataRes = await uploadToPinata(fileBuffer, fileName);
+    const ipfsUrl = `https://${process.env.PINATA_GATEWAY_URL}/ipfs/${pinataRes.IpfsHash}`;
+
+    deliveryNote.firmaUrl = ipfsUrl;
+    deliveryNote.firmado = true;
+
+    await deliveryNote.save();
+
+    res.status(200).json({
+      message: "Albaran firmado correctamente",
+      firmaUrl: ipfsUrl
+    });
+
+  } catch (err) {
+    handleHttpError(res, descripcion_error, code_error);
+  }
+};
+
+module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes,firmarDeliveryNote };
 
 
