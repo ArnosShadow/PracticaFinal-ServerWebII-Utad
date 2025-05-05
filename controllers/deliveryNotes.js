@@ -2,6 +2,8 @@ const ClientModel = require("../models/deliverynote");
 const UserModel = require("../models/users");
 const { handleHttpError } = require("../utils/handleError");
 const { uploadToPinata } = require("../utils/handleStorageIPFS");
+const { generarBufferPDF } = require("../utils/pdfGenerator");
+
 
 const createDeliveryNote = async (req, res) => {
     let descripcion_error = "ERROR_CREATE_DELIVERY_NOTE";
@@ -203,6 +205,66 @@ const firmarDeliveryNote = async (req, res) => {
   }
 };
 
-module.exports = {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes,firmarDeliveryNote };
+const generarPDFDeliveryNote = async (req, res) => {
+  let descripcion_error = "ERROR_GENERAR_PDF";
+  let code_error = 500;
+
+  try {
+    const nota = await DeliveryNoteModel.findById(req.params.id)
+      .populate("userId")
+      .populate("clientId")
+      .populate("projectId");
+
+    if (!nota){
+      descripcion_error="Albaran no encontrado";
+      code_error=404;
+      throw new Error("Albaran no encontrado");
+    }
+
+    // Solo el creador o su guest puede descargar
+    const userId = req.user.id;
+    if (nota.userId._id.toString() !== userId && (!nota.userId.role.includes("guest"))) {
+      descripcion_error="Acceso no autorizado al PDF del albaran";
+      code_error=403;
+      throw new Error("Acceso no autorizado al PDF del albaran");
+    }
+
+    // Si ya tiene PDF subido a IPFS y esta firmado
+    if (nota.firmado && nota.pdfUrl) {
+      return res.redirect(nota.pdfUrl);
+    }
+
+    // Generar PDF en memoria
+    const pdfBuffer = await generarBufferPDF(nota);
+
+    // Si está firmado, subimos a IPFS y guardamos la URL
+    if (nota.firmado) {
+      const uploadRes = await uploadToPinata(pdfBuffer, `albaran-${nota._id}.pdf`);
+      const url = `https://${process.env.PINATA_GATEWAY_URL}/ipfs/${uploadRes.IpfsHash}`;
+      nota.pdfUrl = url;
+      await nota.save();
+    }
+
+    // Enviar PDF al usuario como descarga
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="albaran-${nota._id}.pdf"`
+    });
+
+    res.send(pdfBuffer);
+
+  } catch (err) {
+    handleHttpError(res, descripcion_error, code_error);
+  }
+};
+module.exports = {
+  createDeliveryNote, 
+  getDeliveryNotes, 
+  getDeliveryNoteById, 
+  updateDeliveryNote, 
+  deleteDeliveryNote, 
+  restoreDeliveryNote, 
+  getArchivedDeliveryNotes,
+  firmarDeliveryNote, generarPDFDeliveryNote };
 
 
