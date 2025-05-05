@@ -29,6 +29,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "jest": "^29.7.0",
     "supertest": "^7.1.0"
   }
