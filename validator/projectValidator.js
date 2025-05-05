@@ -10,4 +10,4 @@ const projectValidator = [
     .withMessage("La descripción debe tener al menos 3 caracteres")
 ];
 
-module.exports = { projectValidator };
+module.exports ={ projectValidator};
