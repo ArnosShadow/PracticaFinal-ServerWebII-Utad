@@ -1,6 +1,6 @@
 const express= require("express");
 const { actualizarItem, incluirItem, obtenerDatos, obtenerDato, eliminarDato, recuperarCuenta, invitar,enviarPeticion, confirmarPeticion } = require("../controllers/users");
-const { authMiddleware } = require("../utils/authMiddleware");
+const  authMiddleware  = require("../utils/authMiddleware");
 const router = express.Router();
 
 /**

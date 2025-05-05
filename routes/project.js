@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middlewares/authMiddleware");
+const authMiddleware = require("../utils/authMiddleware");
 const handleValidator = require("../utils/handleValidator");
 const { projectValidator } = require("../validator/project");
 const {createProject, getProjectById, getProjects, updateProject, deleteProject,restoreProject,getArchivedProject} = require("../controllers/project");
