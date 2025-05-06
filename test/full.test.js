@@ -130,10 +130,10 @@ describe("Flujo completo API", () => {
 describe("Gestión de archivado y eliminación", () => {
   test("10. Archivar cliente (soft delete)", async () => {
     const res = await request(app)
-      .delete(`/client/${clientId}?soft=true`)
+      .delete(`/api/client/${clientId}?soft=true`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body.message).toContain("archivado");
+    expect(res.body.archivado).toBe(true);
   });
 
   test("11. Ver clientes archivados", async () => {

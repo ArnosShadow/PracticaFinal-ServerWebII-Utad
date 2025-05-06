@@ -100,10 +100,11 @@ const deleteClient = async(req, res) =>{
   let code_error = 500;
 
   try {
-    const { id } = req.params;
-    const { soft } = req.query;
+    const  id  = req.params.id;
+    const  soft  = req.query.soft;
 
     if(soft !=='false'){
+      
       const cliente = await ClientModel.findByIdAndUpdate(
         id,
         { archivado: true },
@@ -114,7 +115,7 @@ const deleteClient = async(req, res) =>{
         code_error = 404;
         throw new Error("No existe el cliente");
       }  
-      res.status(200).json({ message: "Cliente archivado (soft delete)", cliente });
+      res.status(200).json({message: "Cliente archivado (soft delete)",archivado: cliente.archivado});
     }else{
       const cliente = await ClientModel.findByIdAndDelete(id);
       
@@ -151,7 +152,7 @@ const restoreClient = async (req, res) => {
       throw new Error("No existe el cliente");
     }
 
-    res.status(200).json({ message: "Cliente restaurado", cliente });
+    res.status(200).json({ message: "Cliente restaurado", cliente, deleted: false });
   } catch (err) {
     handleHttpError(res, descripcion_error, code_error);
   }
