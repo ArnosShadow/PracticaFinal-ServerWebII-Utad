@@ -7,6 +7,7 @@ let clientId;
 let projectId;
 let deliverynotesId;
 let verificationCode;
+let unfirmedDeliveryNoteId;
 
 const timestamp = Date.now(); // milisegundos
 const email = `test${timestamp}@example.com`;
@@ -180,10 +181,36 @@ describe("Gestión de archivado y eliminación", () => {
     expect(res.body.deleted).toBe(false);
   });
 
+  test("17. Clonar albarán sin firmar para tests de archivado", async () => {
+    const res = await request(app)
+      .post("/api/deliverynotes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        clientId,
+        projectId,
+        horas: [
+          {
+            trabajador: "Empleado2",
+            descripcion: "Trabajo sin firmar",
+            horas: 2
+          }
+        ],
+        materiales: [
+          {
+            descripcion: "Material B",
+            cantidad: 3,
+            unidad: "kg"
+          }
+        ],
+        observaciones: "Clonado sin firma"
+      });
+    expect(res.statusCode).toBe(201);
+    unfirmedDeliveryNoteId = res.body._id;
+  });
 
   test("18. Archivar albaran", async () => {
     const res = await request(app)
-      .delete(`/api/deliverynotes/${deliverynotesId}?soft=true`)
+      .delete(`/api/deliverynotes/${unfirmedDeliveryNoteId}?soft=true`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("archivado");
