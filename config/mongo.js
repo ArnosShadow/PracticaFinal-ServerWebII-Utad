@@ -1,17 +1,20 @@
+// config/mongo.js
 const mongoose = require("mongoose");
 
-const dbConnect = () =>{
-    const db_uri = process.env.DB_URI;
-    mongoose.set('strictQuery', false);
-    console.log("Conectando a la BD.");
-    try{
-        mongoose.connect(db_uri);
-    }catch(err){
-        console.err("Error conectando a la BD: "+ err);
-    }
-    
-    mongoose.connection.on("connected", () => "Conectado a la Base de Datos.");
+let isConnected = false;
 
-}
+const dbConnect = async () => {
+  if (isConnected) return;
 
-module.exports = dbConnect;
+  const DB_URI = process.env.DB_URI;
+  try {
+    await mongoose.connect(DB_URI);
+    console.log("Conexión exitosa a MongoDB");
+    isConnected = true;
+  } catch (err) {
+    console.error("Error al conectar a MongoDB", err);
+    throw err;
+  }
+};
+
+module.exports = dbConnect; // 👈 ESTA LÍNEA ES LA QUE FALTABA

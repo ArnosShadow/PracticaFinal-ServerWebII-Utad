@@ -3,6 +3,7 @@ const UserModel = require("../models/users");
 const { handleHttpError } = require("../utils/handleError");
 const { uploadToPinata } = require("../utils/handleStorageIPFS");
 const { generarBufferPDF } = require("../utils/pdfGenerator");
+const axios = require("axios");
 
 
 const createDeliveryNote = async (req, res) => {
@@ -236,7 +237,15 @@ const generarPDFDeliveryNote = async (req, res) => {
 
     // Si ya tiene PDF subido a IPFS y esta firmado
     if (nota.firmado && nota.pdfUrl) {
-      return res.redirect(nota.pdfUrl);
+      const pdfFromIpfs = await axios.get(nota.pdfUrl, { responseType: "arraybuffer" });
+    
+      res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="albaran-${nota._id}.pdf"`
+      });
+    
+      console.log("PDF enviado con éxito");
+      return res.send(pdfFromIpfs.data);
     }
 
     // Generar PDF en memoria
@@ -256,8 +265,8 @@ const generarPDFDeliveryNote = async (req, res) => {
       "Content-Disposition": `attachment; filename="albaran-${nota._id}.pdf"`
     });
 
+    console.log("PDF enviado con éxito");
     res.send(pdfBuffer);
-
   } catch (err) {
     handleHttpError(res, descripcion_error, code_error);
   }

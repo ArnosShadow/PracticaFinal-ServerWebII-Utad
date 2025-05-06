@@ -1,14 +1,14 @@
 const PDFDocument = require("pdfkit");
 const stream = require("stream");
+const axios = require("axios");
 
-const generarBufferPDF = (nota) => {
-  return new Promise((resolve, reject) => {
+const generarBufferPDF = async (nota) => {
+  return new Promise(async (resolve, reject) => {
     const doc = new PDFDocument();
     const chunks = [];
     const bufferStream = new stream.PassThrough();
 
     doc.pipe(bufferStream);
-
     bufferStream.on("data", chunk => chunks.push(chunk));
     bufferStream.on("end", () => resolve(Buffer.concat(chunks)));
     bufferStream.on("error", reject);
@@ -17,7 +17,6 @@ const generarBufferPDF = (nota) => {
     doc.moveDown();
 
     doc.fontSize(12).text(`ID: ${nota._id}`);
-
     doc.text(`Usuario: ${nota.userId?.email || nota.userId}`);
     doc.text(`Cliente: ${nota.clientId?.nombre || nota.clientId}`);
     doc.text(`Proyecto: ${nota.projectId?.nombre || nota.projectId}`);
@@ -46,15 +45,22 @@ const generarBufferPDF = (nota) => {
       doc.moveDown();
     }
 
-    if (nota.firmaUrl) {
+    if (nota.firmaUrl && nota.firmaUrl.startsWith("http")) {
       try {
-        doc.image(nota.firmaUrl, { width: 150 });
+        const response = await axios.get(nota.firmaUrl, { responseType: "arraybuffer" });
+        const imageBuffer = Buffer.from(response.data, "binary");
+        doc.image(imageBuffer, { width: 150 });
       } catch (err) {
         doc.text("Error al cargar la imagen de la firma.");
+        console.error("Error cargando imagen:", err.message);
       }
+    } else {
+      doc.text("Firma no disponible.");
     }
+
     doc.end();
   });
 };
+
 
 module.exports = { generarBufferPDF };
