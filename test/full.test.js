@@ -408,3 +408,123 @@ describe("Cliente API", () => {
 });
 
 
+describe("Project API", () => {
+  test("1. Crear proyecto válido", async () => {
+    const res = await request(app)
+      .post("/api/project")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        nombre: "Proyecto Jest",
+        clientId
+      });
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("_id");
+    projectId = res.body._id;
+  });
+
+  test("2. Crear proyecto duplicado (conflicto)", async () => {
+    const res = await request(app)
+      .post("/api/project")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        nombre: "Proyecto Jest",
+        clientId
+      });
+    expect(res.statusCode).toBe(409);
+  });
+
+  test("3. Crear proyecto sin nombre (error 422)", async () => {
+    const res = await request(app)
+      .post("/api/project")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        clientId
+      });
+    expect(res.statusCode).toBe(422);
+  });
+
+  test("4. Obtener proyecto válido por ID", async () => {
+    const res = await request(app)
+      .get(`/api/project/${projectId}`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body._id).toBe(projectId);
+  });
+
+  test("5. Obtener proyecto inexistente (404)", async () => {
+    const res = await request(app)
+      .get(`/api/project/000000000000000000000000`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("6. Actualizar proyecto válido", async () => {
+    const res = await request(app)
+      .put(`/api/project/${projectId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ nombre: "Proyecto actualizado", descripcion: "Editado con Jest", clientId });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.descripcion).toBe("Editado con Jest");
+  });
+
+  test("7. Actualizar proyecto inexistente (404)", async () => {
+    const res = await request(app)
+      .put(`/api/project/000000000000000000000000`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ nombre: "Nada", clientId });
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("8. Archivar proyecto (soft delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/project/${projectId}?soft=true`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("archivado");
+  });
+
+  test("9. Ver proyectos archivados", async () => {
+    const res = await request(app)
+      .get("/api/project/archivados")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.proyecto).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: projectId })])
+    );
+  });
+
+  test("10. Restaurar proyecto", async () => {
+    const res = await request(app)
+      .patch(`/api/project/restaurar/${projectId}`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.deleted).toBe(false);
+  });
+
+  test("11. Restaurar proyecto inexistente (404)", async () => {
+    const res = await request(app)
+      .patch(`/api/project/restaurar/000000000000000000000000`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("12. Eliminar proyecto definitivamente (hard delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/project/${projectId}?soft=false`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("Proyecto eliminado definitivamente");
+  });
+
+  test("13. Eliminar proyecto inexistente (404)", async () => {
+    const res = await request(app)
+      .delete(`/api/project/000000000000000000000000?soft=false`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("14. Acceso sin token (401)", async () => {
+    const res = await request(app).get("/api/project");
+    expect(res.statusCode).toBe(401);
+  });
+});

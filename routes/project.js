@@ -198,7 +198,7 @@ router.get("/:id", authMiddleware, getProjectById);
  *       404:
  *         description: Proyecto no encontrado
  */
-router.put("/:id", projectValidator, handleValidator, updateProject);
+router.put("/:id", authMiddleware, projectValidator, handleValidator, updateProject);
 
 /**
  * @swagger
