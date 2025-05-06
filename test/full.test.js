@@ -528,3 +528,122 @@ describe("Project API", () => {
     expect(res.statusCode).toBe(401);
   });
 });
+describe("DeliveryNote API", () => {
+  let deliveryNoteId;
+
+  test("1. Crear albarán válido", async () => {
+    const res = await request(app)
+      .post("/api/deliverynotes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        clientId,
+        projectId,
+        horas: [{ trabajador: "Empleado A", descripcion: "Trabajo 1", horas: 5 }],
+        materiales: [{ descripcion: "Material A", cantidad: 10, unidad: "kg" }]
+      });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("_id");
+    deliveryNoteId = res.body._id;
+  });
+
+  test("2. Obtener albarán por ID", async () => {
+    const res = await request(app)
+      .get(`/api/deliverynotes/${deliveryNoteId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        horas: [{ trabajador: "Empleado B", descripcion: "Revisión", horas: 2 }],
+        materiales: [],
+        clientId,
+        projectId
+      });
+      
+    expect(res.statusCode).toBe(200);
+    expect(res.body._id).toBe(deliveryNoteId);
+  });
+
+  test("3. Actualizar albarán válido", async () => {
+    const res = await request(app)
+      .put(`/api/deliverynotes/${deliveryNoteId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({         
+        clientId,       
+        projectId,   
+        horas: [{ trabajador: "Empleado B", descripcion: "Trabajo editado", horas: 8 }],
+        materiales: [{ descripcion: "Material B", cantidad: 5, unidad: "litros" }]
+      });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.horas[0].trabajador).toBe("Empleado B");
+  });
+
+  test("4. Obtener albarán inexistente (404)", async () => {
+    const res = await request(app)
+      .get("/api/deliverynotes/000000000000000000000000")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(404);
+  });
+
+  test("5. Archivar albarán (soft delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/deliverynotes/${deliveryNoteId}?soft=true`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("archivado");
+  });
+
+  test("6. Ver albaranes archivados", async () => {
+    const res = await request(app)
+      .get("/api/deliverynotes/archivados")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.albaranes).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: deliveryNoteId })])
+    );
+  });
+
+  test("7. Restaurar albarán", async () => {
+    const res = await request(app)
+      .patch(`/api/deliverynotes/restaurar/${deliveryNoteId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.deleted).toBe(false);
+  });
+
+  test("8. Firmar albarán", async () => {
+    const res = await request(app)
+      .post(`/api/deliverynotes/firmar/${deliveryNoteId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .attach("firma", Buffer.from("firma-falsa"), "firma.png");
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.firmado).toBe(true);
+  });
+
+  test("9. Descargar PDF del albarán", async () => {
+    const res = await request(app)
+      .get(`/api/deliverynotes/pdf/${deliveryNoteId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toBe("application/pdf");
+  });
+
+  test("10. Eliminar albarán firmado (error 403)", async () => {
+    const res = await request(app)
+      .delete(`/api/deliverynotes/${deliveryNoteId}?soft=false`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.statusCode).toBe(403);
+  });
+
+  test("11. Acceso sin token (401)", async () => {
+    const res = await request(app).get("/api/deliverynotes");
+    expect(res.statusCode).toBe(401);
+  });
+});
+
