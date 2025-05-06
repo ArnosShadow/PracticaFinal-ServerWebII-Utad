@@ -135,7 +135,7 @@ const restoreProject = async (req, res) =>{
       code_error=404 ;
       throw new Error("Proyecto no encontrado");
     }
-    res.status(200).json({ message: "Proyecto restaurado", proyecto });
+    res.status(200).json({ message: "Proyecto restaurado", proyecto, deleted: false });
 
   } catch (error) {
     handleHttpError(res, descripcion_error, code_error);

@@ -167,9 +167,9 @@ describe("Gestión de archivado y eliminación", () => {
       .get("/api/project/archivados")
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(
+    expect(res.body.proyecto).toEqual(
       expect.arrayContaining([expect.objectContaining({ _id: projectId })])
-    );
+    );    
   });
 
   test("16. Restaurar proyecto", async () => {
