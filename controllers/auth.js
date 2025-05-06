@@ -118,13 +118,12 @@ const loginItem =async (req, res) =>{
         const result =  await AuthModel.findOne({email:email});
         console.log(result)
 
-        if(!descrifrarComparar(password, result.password)){
-
-            descripcion_error = "Contraseña o email incorrecto";
-            codigo_error = 400;
-            throw err;
+        const passwordCorrect = await descrifrarComparar(password, result.password);
+        if (!passwordCorrect) {
+        descripcion_error = "Contraseña incorrecta";
+        throw new Error("Contraseña o email incorrecto");
         }
-
+          
         const token=await JWTSign(result);
 
         res.status(200).json({
