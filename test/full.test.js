@@ -174,7 +174,7 @@ describe("Gestión de archivado y eliminación", () => {
 
   test("16. Restaurar proyecto", async () => {
     const res = await request(app)
-      .patch(`/api/project/${projectId}`)
+      .patch(`/api/project/restaurar/${projectId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.deleted).toBe(false);

@@ -59,6 +59,19 @@ router.post("/", authMiddleware, projectValidator, handleValidator, createProjec
  *         description: Lista de proyectos disponibles
  */
 router.get("/", authMiddleware, getProjects);
+/**
+ * @swagger
+ * /project/archivados:
+ *   get:
+ *     summary: Obtener proyectos archivados
+ *     tags: [Proyectos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de proyectos archivados
+ */
+router.get("/archivados", authMiddleware, getArchivedProject);
 
 /**
  * @swagger
@@ -164,7 +177,7 @@ router.delete("/:id", authMiddleware, deleteProject);
  *       404:
  *         description: Proyecto no encontrado
  */
-router.delete("/:id", authMiddleware, restoreProject);
+router.patch("/restaurar/:id", authMiddleware, restoreProject);
 
 
 
