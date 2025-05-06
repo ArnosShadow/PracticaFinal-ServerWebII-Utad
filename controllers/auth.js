@@ -17,10 +17,10 @@ const createItem = async(req, res) =>{
         }
         
         //Comprobamos si el correo ya fue verificado.
-        if(await comprobarVerificadoEmail(body.email, AuthModel)){
-            codigo_error=409;
-            descripcion_error="ERROR:El email ya está registrado y verificado.";
-            throw err;
+        if (await comprobarVerificadoEmail(body.email, AuthModel)) {
+            codigo_error = 409;
+            descripcion_error = "ERROR: El email ya está registrado y verificado.";
+            throw new Error(descripcion_error);
         }
 
         //ciframos la contraseña
@@ -73,14 +73,16 @@ const validateItem = async (req, res) => {
         if (!email || !code) {
             descripcion_error = "Faltan datos obligatorios";
             codigo_error = 400;
-            throw err;
+            throw new Error(descripcion_error);
         }
+        
 
         if ((code.toString()).length !== 6) {
             descripcion_error = "El código debe ser de 6 dígitos numéricos";
             codigo_error = 400;
-            throw err;
+            throw new Error(descripcion_error);
         }
+        
 
         const usuario = await AuthModel.findOne({ email });
 

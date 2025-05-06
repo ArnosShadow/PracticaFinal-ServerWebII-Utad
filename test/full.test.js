@@ -1,3 +1,7 @@
+jest.mock('../utils/handleEmail', () => ({
+  sendEmail: jest.fn().mockResolvedValue(true)
+}));
+
 const request = require("supertest");
 const app = require("../app"); // Asegúrate de que la ruta sea correcta
 const dbConnect = require("../config/mongo");
