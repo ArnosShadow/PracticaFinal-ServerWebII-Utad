@@ -200,6 +200,7 @@ const firmarDeliveryNote = async (req, res) => {
 
     res.status(200).json({
       message: "Albaran firmado correctamente",
+      firmado: true,
       firmaUrl: ipfsUrl
     });
 
@@ -241,7 +242,7 @@ const generarPDFDeliveryNote = async (req, res) => {
     const pdfBuffer = await generarBufferPDF(nota);
 
     // Si está firmado, subimos a IPFS y guardamos la URL
-    if (nota.firmado) {
+    if (nota.firmado && !nota.pdfUrl) {
       const uploadRes = await uploadToPinata(pdfBuffer, `albaran-${nota._id}.pdf`);
       const url = `https://${process.env.PINATA_GATEWAY_URL}/ipfs/${uploadRes.IpfsHash}`;
       nota.pdfUrl = url;

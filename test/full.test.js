@@ -53,7 +53,6 @@ describe("Flujo completo API", () => {
         telefono: "600000000",
         direccion: "Calle Test 123"
       });
-    console.log("Response:", res.body); // Log de la respuesta para ver si la creación fue exitosa
     expect(res.statusCode).toBe(201);
     clientId = res.body._id;
   });

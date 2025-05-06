@@ -9,7 +9,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 
-const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes,firmarDeliveryNote} = require("../controllers/deliveryNotes");
+const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes,firmarDeliveryNote, generarPDFDeliveryNote} = require("../controllers/deliveryNotes");
 
 
 
@@ -247,6 +247,6 @@ router.get("/archivados", authMiddleware, getArchivedDeliveryNotes);
  *         description: Albarán no encontrado
  */
 router.post("/firmar/:id", authMiddleware, upload.single("firma"), firmarDeliveryNote);
-
+router.get("/pdf/:id", authMiddleware, generarPDFDeliveryNote);
 
 module.exports = router;
