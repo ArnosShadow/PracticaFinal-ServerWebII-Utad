@@ -8,7 +8,8 @@ let projectId;
 let deliverynotesId;
 let verificationCode;
 
-const email = "test@example.com";
+const timestamp = Date.now(); // milisegundos
+const email = `test${timestamp}@example.com`;
 const password = "test1234";
 
 beforeAll(async () => {
@@ -153,14 +154,6 @@ describe("Gestión de archivado y eliminación", () => {
     expect(res.body.deleted).toBe(false);
   });
 
-  test("13. Eliminar cliente (hard delete)", async () => {
-    const res = await request(app)
-      .delete(`/api/client/${clientId}?soft=false`)
-      .set("Authorization", `Bearer ${token}`);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toContain("eliminado permanentemente");
-  });
-
   test("14. Archivar proyecto", async () => {
     const res = await request(app)
       .delete(`/api/project/${projectId}?soft=true`)
@@ -187,13 +180,6 @@ describe("Gestión de archivado y eliminación", () => {
     expect(res.body.deleted).toBe(false);
   });
 
-  test("17. Eliminar proyecto (hard delete)", async () => {
-    const res = await request(app)
-      .delete(`/api/project/${projectId}?soft=false`)
-      .set("Authorization", `Bearer ${token}`);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toContain("eliminado permanentemente");
-  });
 
   test("18. Archivar albaran", async () => {
     const res = await request(app)
@@ -224,6 +210,22 @@ describe("Gestión de archivado y eliminación", () => {
   test("21. Eliminar albaran (hard delete)", async () => {
     const res = await request(app)
       .delete(`/api/deliverynotes/${deliverynotesId}?soft=false`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("eliminado permanentemente");
+  });
+
+  test("17. Eliminar proyecto (hard delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/project/${projectId}?soft=false`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("eliminado permanentemente");
+  });
+
+  test("13. Eliminar cliente (hard delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/client/${clientId}?soft=false`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("eliminado permanentemente");

@@ -89,11 +89,10 @@ const validateItem = async (req, res) => {
             codigo_error = 404;
             throw err;
         }
-
-        if (code !== usuario.codigoValidacion) {
+        if (code.toString() !== usuario.codigoValidacion.toString()) {
             descripcion_error = "Código de validación incorrecto";
             codigo_error = 400;
-            throw err;
+            throw new Error("Código de validación incorrecto");
         }
         await AuthModel.findOneAndUpdate({ email }, {estadoValidacion: "Validado"});
 
