@@ -138,7 +138,7 @@ const restoreDeliveryNote = async (req, res) => {
         code_error = 404;
         throw new Error("Albarán no encontrado");
       }
-      res.status(200).json({ message: "Albarán restaurado", nota });
+      res.status(200).json({ deleted: false });
     } catch (err) {
       handleHttpError(res, descripcion_error, code_error);
     }
@@ -149,13 +149,14 @@ const getArchivedDeliveryNotes = async (req, res) => {
     let code_error = 500;
     try {
       const userId = req.user.id;
-  
+      console.log("req.user:", req.user);
+
       const archivados = await DeliveryNoteModel.find({
         archivado: true,
         userId
       });
-  
-      res.status(200).json(archivados);
+      res.status(200).json({ albaranes: archivados });
+
     } catch (err) {
       handleHttpError(res, descripcion_error, code_error);
     }

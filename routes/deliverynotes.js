@@ -9,7 +9,14 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 
-const {createDeliveryNote, getDeliveryNotes, getDeliveryNoteById, updateDeliveryNote, deleteDeliveryNote, restoreDeliveryNote, getArchivedDeliveryNotes,firmarDeliveryNote, generarPDFDeliveryNote} = require("../controllers/deliveryNotes");
+const {createDeliveryNote, 
+    getDeliveryNotes, 
+    getDeliveryNoteById, 
+    updateDeliveryNote, 
+    deleteDeliveryNote, 
+    restoreDeliveryNote, 
+    getArchivedDeliveryNotes,
+    firmarDeliveryNote, generarPDFDeliveryNote} = require("../controllers/deliveryNotes");
 
 
 
@@ -83,6 +90,20 @@ router.post("/", authMiddleware, deliveryNoteValidator, handleValidator, createD
  *         description: Lista de albaranes
  */
 router.get("/", authMiddleware, getDeliveryNotes);
+
+/**
+ * @swagger
+ * /deliverynote/archivados:
+ *   get:
+ *     summary: Listar albaranes archivados
+ *     tags: [Albaranes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de albaranes archivados
+ */
+router.get("/archivados", authMiddleware, getArchivedDeliveryNotes);
 
 /**
  * @swagger
@@ -202,19 +223,6 @@ router.delete("/:id", authMiddleware, deleteDeliveryNote);
  */
 router.patch("/restaurar/:id", authMiddleware, restoreDeliveryNote);
 
-/**
- * @swagger
- * /deliverynote/archivados:
- *   get:
- *     summary: Listar albaranes archivados
- *     tags: [Albaranes]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de albaranes archivados
- */
-router.get("/archivados", authMiddleware, getArchivedDeliveryNotes);
 
 /**
  * @swagger

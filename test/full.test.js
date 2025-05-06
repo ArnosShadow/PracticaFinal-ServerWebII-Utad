@@ -221,14 +221,14 @@ describe("Gestión de archivado y eliminación", () => {
       .get("/api/deliverynotes/archivados")
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(
-      expect.arrayContaining([expect.objectContaining({ _id: deliverynotesId })])
+    expect(res.body.albaranes).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: unfirmedDeliveryNoteId  })])
     );
   });
 
   test("20. Restaurar albaran", async () => {
     const res = await request(app)
-      .patch(`/api/deliverynotes/restaurar/${deliverynotesId}`)
+      .patch(`/api/deliverynotes/restaurar/${unfirmedDeliveryNoteId }`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.deleted).toBe(false);
@@ -236,10 +236,10 @@ describe("Gestión de archivado y eliminación", () => {
 
   test("21. Eliminar albaran (hard delete)", async () => {
     const res = await request(app)
-      .delete(`/api/deliverynotes/${deliverynotesId}?soft=false`)
+      .delete(`/api/deliverynotes/${unfirmedDeliveryNoteId }?soft=false`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body.message).toContain("eliminado permanentemente");
+    expect(res.body.message).toContain("Albarán eliminado definitivamente");
   });
 
   test("17. Eliminar proyecto (hard delete)", async () => {
@@ -247,7 +247,7 @@ describe("Gestión de archivado y eliminación", () => {
       .delete(`/api/project/${projectId}?soft=false`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body.message).toContain("eliminado permanentemente");
+    expect(res.body.message).toContain("Proyecto eliminado definitivamente");
   });
 
   test("13. Eliminar cliente (hard delete)", async () => {
