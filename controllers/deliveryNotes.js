@@ -1,4 +1,4 @@
-const ClientModel = require("../models/deliverynote");
+const DeliveryNoteModel = require("../models/deliverynote");
 const UserModel = require("../models/users");
 const { handleHttpError } = require("../utils/handleError");
 const { uploadToPinata } = require("../utils/handleStorageIPFS");
