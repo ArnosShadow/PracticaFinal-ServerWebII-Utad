@@ -1,17 +1,24 @@
-const {validationResult} = require("express-validator");
-const { handleHttpError } = require("./handleError");
+const { validationResult } = require("express-validator");
+const { handleHttpError } = require("../utils/handleError");
 
+const handleValidator = (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const errorDetails = errors.array().map(err => ({
+        campo: err.param,
+        mensaje: err.msg
+      }));
 
-const validateResult =(req,res,next) =>{
-
-    try{
-        validationResult(req).throw;
-        return next();
-
-    }catch(err){
-        handleHttpError(res, {errors: err.array()}, 403);
+      return res.status(422).json({
+        message: "Errores de validación",
+        errores: errorDetails
+      });
     }
+    next();
+  } catch (err) {
+    handleHttpError(res, "Error al validar los datos", 500);
+  }
+};
 
-}
-
-module.exports = validateResult;
+module.exports = handleValidator;

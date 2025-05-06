@@ -54,7 +54,7 @@ router.post("/registro", validationResult, createItem);
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/validacion", authMiddleware, validateItem);
+router.post("/validacion", validateItem);
 
 /**
  * @swagger

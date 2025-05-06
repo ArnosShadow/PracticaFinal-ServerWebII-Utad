@@ -10,7 +10,6 @@ const loggerStream = require("./utils/handleLogger");
 
 
 
-dbConnect();
 const app = express();
 
 // Middleware para errores enviados a Slack
@@ -24,17 +23,13 @@ morganBody(app, {
 //Le decimos a la app de express() que use cors para evitar errores Cross-Domain.
 app.use(cors());
 app.use(express.json());
-app.use("./routes", router);
+//app.use("./routes", router);
 
-const port = process.env.PORT || 3001
-app.listen(port, ()=>{
-
-    console.log("Servidor escuchando por el puerto "+ port);
-
-})
 
 app.use("/api-docs",
     swaggerUi.serve,
     swaggerUi.setup(swaggerSpecs)
 )
 app.use("/api", require("./routes"))
+
+module.exports = app;

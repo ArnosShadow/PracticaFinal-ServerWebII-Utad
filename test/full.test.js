@@ -1,26 +1,23 @@
 const request = require("supertest");
-const mongoose = require("mongoose");
-const app = require("../app");
+const app = require("../app"); // Asegúrate de que la ruta sea correcta
+const dbConnect = require("../config/mongo");
 
 let token;
 let clientId;
 let projectId;
-let deliveryNoteId;
+let deliverynotesId;
 let verificationCode;
-let email = `test${Date.now()}@mail.com`;
-let password = "TestPass123";
+
+const email = "test@example.com";
+const password = "test1234";
 
 beforeAll(async () => {
-  await new Promise((resolve) => mongoose.connection.once("connected", resolve));
-});
-
-afterAll(async () => {
-  await mongoose.connection.close();
+  await dbConnect();
 });
 
 describe("Flujo completo API", () => {
   test("1. Registro de usuario", async () => {
-    const res = await request(app).post("/api/auth/register").send({
+    const res = await request(app).post("/api/auth/registro").send({
       email,
       password,
       nombre: "Test",
@@ -33,18 +30,14 @@ describe("Flujo completo API", () => {
   });
 
   test("2. Validación del usuario", async () => {
-    const res = await request(app).post("/api/auth/validate").send({
-      email,
-      code: verificationCode
-    });
+    const res = await request(app)
+      .post("/api/auth/validacion")
+      .send({ email, code: verificationCode });
     expect(res.statusCode).toBe(200);
   });
 
   test("3. Login y obtención de token", async () => {
-    const res = await request(app).post("/api/auth/login").send({
-      email,
-      password
-    });
+    const res = await request(app).post("/api/auth/login").send({ email, password });
     expect(res.statusCode).toBe(200);
     token = res.body.token;
     expect(token).toBeDefined();
@@ -55,15 +48,16 @@ describe("Flujo completo API", () => {
       .post("/api/client")
       .set("Authorization", `Bearer ${token}`)
       .send({
-        nombre: "Cliente Test",
-        nif: "11111111A",
-        email: "cliente@mail.com",
-        telefono: "612345678",
+        nombre: "Cliente de prueba",
+        email: "cliente@empresa.com",
+        telefono: "600000000",
         direccion: "Calle Test 123"
       });
+    console.log("Response:", res.body); // Log de la respuesta para ver si la creación fue exitosa
     expect(res.statusCode).toBe(201);
     clientId = res.body._id;
   });
+  
 
   test("5. Crear proyecto", async () => {
     const res = await request(app)
@@ -71,7 +65,6 @@ describe("Flujo completo API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         nombre: "Proyecto Test",
-        descripcion: "Descripción",
         clientId
       });
     expect(res.statusCode).toBe(201);
@@ -80,32 +73,44 @@ describe("Flujo completo API", () => {
 
   test("6. Crear albarán", async () => {
     const res = await request(app)
-      .post("/api/deliverynote")
+      .post("/api/deliverynotes")
       .set("Authorization", `Bearer ${token}`)
       .send({
         clientId,
         projectId,
-        horas: [{ trabajador: "Trabajador Test", descripcion: "Trabajo", horas: 5 }],
-        materiales: [],
+        horas: [
+          {
+            trabajador: "Empleado1",
+            descripcion: "Trabajo realizado",
+            horas: 3
+          }
+        ],
+        materiales: [
+          {
+            descripcion: "Material A",
+            cantidad: 5,
+            unidad: "kg"
+          }
+        ],
         observaciones: "Observación de prueba"
       });
     expect(res.statusCode).toBe(201);
-    deliveryNoteId = res.body._id;
+    deliverynotesId = res.body._id;
   });
 
   test("7. Obtener albarán", async () => {
     const res = await request(app)
-      .get(`/api/deliverynote/${deliveryNoteId}`)
+      .get(`/api/deliverynotes/${deliverynotesId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body._id).toBe(deliveryNoteId);
+    expect(res.body._id).toBe(deliverynotesId);
   });
 
   test("8. Firmar albarán (subida firma)", async () => {
     const res = await request(app)
-      .post(`/api/deliverynote/firmar/${deliveryNoteId}`)
+      .post(`/api/deliverynotes/firmar/${deliverynotesId}`)
       .set("Authorization", `Bearer ${token}`)
-      .attach("firma", Buffer.from("fake-image-content"), {
+      .attach("firma", Buffer.from("firma de prueba"), {
         filename: "firma.png",
         contentType: "image/png"
       });
@@ -116,18 +121,16 @@ describe("Flujo completo API", () => {
 
   test("9. Descargar PDF del albarán", async () => {
     const res = await request(app)
-      .get(`/api/deliverynote/pdf/${deliveryNoteId}`)
+      .get(`/api/deliverynotes/pdf/${deliverynotesId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toBe("application/pdf");
   });
 });
-
-
 describe("Gestión de archivado y eliminación", () => {
   test("10. Archivar cliente (soft delete)", async () => {
     const res = await request(app)
-      .delete(`/api/client/${clientId}?soft=true`)
+      .delete(`/client/${clientId}?soft=true`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("archivado");
@@ -138,9 +141,9 @@ describe("Gestión de archivado y eliminación", () => {
       .get("/api/client/archivados")
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(expect.arrayContaining([
-      expect.objectContaining({ _id: clientId })
-    ]));
+    expect(res.body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: clientId })])
+    );
   });
 
   test("12. Restaurar cliente", async () => {
@@ -172,14 +175,14 @@ describe("Gestión de archivado y eliminación", () => {
       .get("/api/project/archivados")
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(expect.arrayContaining([
-      expect.objectContaining({ _id: projectId })
-    ]));
+    expect(res.body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: projectId })])
+    );
   });
 
   test("16. Restaurar proyecto", async () => {
     const res = await request(app)
-      .patch(`/api/project/restaurar/${projectId}`)
+      .patch(`/api/project/${projectId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.deleted).toBe(false);
@@ -193,9 +196,9 @@ describe("Gestión de archivado y eliminación", () => {
     expect(res.body.message).toContain("eliminado permanentemente");
   });
 
-  test("18. Archivar albarán", async () => {
+  test("18. Archivar albaran", async () => {
     const res = await request(app)
-      .delete(`/api/deliverynote/${deliveryNoteId}?soft=true`)
+      .delete(`/api/deliverynotes/${deliverynotesId}?soft=true`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("archivado");
@@ -203,93 +206,89 @@ describe("Gestión de archivado y eliminación", () => {
 
   test("19. Ver albaranes archivados", async () => {
     const res = await request(app)
-      .get("/api/deliverynote/archivados")
+      .get("/api/deliverynotes/archivados")
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual(expect.arrayContaining([
-      expect.objectContaining({ _id: deliveryNoteId })
-    ]));
+    expect(res.body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: deliverynotesId })])
+    );
   });
 
-  test("20. Restaurar albarán", async () => {
+  test("20. Restaurar albaran", async () => {
     const res = await request(app)
-      .patch(`/api/deliverynote/restaurar/${deliveryNoteId}`)
+      .patch(`/api/deliverynotes/restaurar/${deliverynotesId}`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.deleted).toBe(false);
   });
 
-  test("21. Eliminar albarán (hard delete)", async () => {
+  test("21. Eliminar albaran (hard delete)", async () => {
     const res = await request(app)
-      .delete(`/api/deliverynote/${deliveryNoteId}?soft=false`)
+      .delete(`/api/deliverynotes/${deliverynotesId}?soft=false`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toContain("eliminado permanentemente");
   });
 });
 
-
 describe("Tests negativos y errores esperados", () => {
-    test("22. Registro con email ya registrado", async () => {
-      const res = await request(app).post("/api/auth/register").send({
-        email,
-        password,
-        nombre: "Repetido",
-        apellido: "Email",
-        nif: "99999999A"
+  test("22. Registro con email ya registrado", async () => {
+    const res = await request(app).post("/api/auth/registro").send({
+      email,
+      password,
+      nombre: "Test",
+      apellido: "Usuario",
+      nif: "99999999A"
+    });
+    expect(res.statusCode).toBe(409);
+  });
+
+  test("23. Login con contraseña incorrecta", async () => {
+    const res = await request(app).post("/api/auth/login").send({
+      email,
+      password: "contramal"
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  test("24. Crear cliente sin nombre", async () => {
+    const res = await request(app)
+      .post("/api/client")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        email: "prueba@test.com",
+        telefono: "123123123",
+        direccion: "Calle sin nombre"
       });
-      expect(res.statusCode).toBe(409);
-    });
-  
-    test("23. Login con contraseña incorrecta", async () => {
-      const res = await request(app).post("/api/auth/login").send({
-        email,
-        password: "ContraseñaIncorrecta123"
+    expect(res.statusCode).toBe(422);
+  });
+
+  test("25. Crear proyecto sin clientId", async () => {
+    const res = await request(app)
+      .post("/api/project")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ nombre: "Proyecto sin cliente" });
+    expect(res.statusCode).toBe(422);
+  });
+
+  test("26. Crear albaran sin horas ni materiales", async () => {
+    const res = await request(app)
+      .post("/api/deliverynotes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        observaciones: "Sin datos reales"
       });
-      expect(res.statusCode).toBe(400);
-    });
-  
-    test("24. Crear cliente sin nombre", async () => {
-      const res = await request(app)
-        .post("/api/client")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          nif: "22222222B"
-        });
-      expect(res.statusCode).toBe(422);
-    });
-  
-    test("25. Crear proyecto sin clientId", async () => {
-      const res = await request(app)
-        .post("/api/project")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          nombre: "Proyecto sin cliente"
-        });
-      expect(res.statusCode).toBe(422);
-    });
-  
-    test("26. Crear albarán sin horas ni materiales", async () => {
-      const res = await request(app)
-        .post("/api/deliverynote")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          observaciones: "Sin datos reales"
-        });
-      expect(res.statusCode).toBe(422);
-    });
-  
-    test("27. Firmar albarán inexistente", async () => {
-      const res = await request(app)
-        .post("/api/deliverynote/firmar/000000000000000000000000")
-        .set("Authorization", `Bearer ${token}`)
-        .attach("firma", Buffer.from("fake"), {
-          filename: "firma.png",
-          contentType: "image/png"
-        });
-      expect(res.statusCode).toBe(404);
-    });
+    expect(res.statusCode).toBe(422);
+  });
+
+  test("27. Firmar albaran inexistente", async () => {
+    const res = await request(app)
+      .post(`/api/deliverynotes/firmar/000000000000000000000000`)
+      .set("Authorization", `Bearer ${token}`)
+      .attach("firma", Buffer.from("FAKE_IMAGE"), {
+        filename: "firma.png",
+        contentType: "image/png"
+      });
+    expect(res.statusCode).toBe(404);
+  });
 });
-  
-
-

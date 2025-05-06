@@ -3,12 +3,13 @@ const UserModel = require("../models/users");
 const { handleHttpError } = require("../utils/handleError");
 
 const createClient = async (req, res) => {
-  let description_error= "ERROR_CREATE_CLIENTE";
+  let description_error = "ERROR_CREATE_CLIENTE";
   let code_error = 500;
   try {
     const userId = req.user.id;
     const user = await UserModel.findById(userId);
-    const { nombre } = req.body;
+    const { nombre, email, telefono, direccion } = req.body;
+    console.log("Request Body:", req.body); // Log para depurar los datos enviados
 
     const existe = await ClientModel.findOne({
       nombre,
@@ -16,9 +17,9 @@ const createClient = async (req, res) => {
     });
 
     if (existe) {
-      description_error= "Cliente ya registrado";
-      code_error= 409;
-      throw new Error("El cliente ya existia");
+      description_error = "Cliente ya registrado";
+      code_error = 409;
+      throw new Error("El cliente ya existía");
     }
 
     const nuevoCliente = await ClientModel.create({
@@ -29,9 +30,11 @@ const createClient = async (req, res) => {
 
     res.status(201).json(nuevoCliente);
   } catch (err) {
+    console.error("Error creating client:", err);
     handleHttpError(res, description_error, code_error);
   }
 };
+
 
 const getClients = async (req, res) => {
   let descripcion_error = "ERROR_GET_CLIENTES";
