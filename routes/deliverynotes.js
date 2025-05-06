@@ -255,6 +255,35 @@ router.patch("/restaurar/:id", authMiddleware, restoreDeliveryNote);
  *         description: Albarán no encontrado
  */
 router.post("/firmar/:id", authMiddleware, upload.single("firma"), firmarDeliveryNote);
+/**
+ * @swagger
+ * /deliverynote/pdf/{id}:
+ *   get:
+ *     summary: Descargar el PDF del albarán
+ *     tags: [Albaranes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del albarán
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: PDF generado correctamente
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       403:
+ *         description: Acceso no autorizado al PDF del albarán
+ *       404:
+ *         description: Albarán no encontrado
+ */
+
 router.get("/pdf/:id", authMiddleware, generarPDFDeliveryNote);
 
 module.exports = router;
