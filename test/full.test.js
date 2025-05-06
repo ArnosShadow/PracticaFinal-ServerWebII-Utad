@@ -324,3 +324,85 @@ describe("Tests negativos y errores esperados", () => {
     expect(res.statusCode).toBe(404);
   });
 });
+
+
+describe("Cliente API", () => {
+  test("1. Crear cliente válido", async () => {
+    const res = await request(app)
+      .post("/api/client")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        nombre: "Cliente Test",
+        email: "cliente@example.com",
+        telefono: "600000000",
+        direccion: "Calle Test"
+      });
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("_id");
+    clientId = res.body._id;
+  });
+
+  test("2. Obtener cliente por ID", async () => {
+    const res = await request(app)
+      .get(`/api/client/${clientId}`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body._id).toBe(clientId);
+  });
+
+  test("3. Actualizar cliente", async () => {
+    const res = await request(app)
+      .put(`/api/client/${clientId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ nombre: "Cliente actualizado", telefono: "699999999" });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.telefono).toBe("699999999");
+  });
+
+  test("4. Archivar cliente (soft delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/client/${clientId}?soft=true`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("archivado");
+  });
+
+  test("5. Ver clientes archivados", async () => {
+    const res = await request(app)
+      .get("/api/client/archivados")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual(
+      expect.arrayContaining([expect.objectContaining({ _id: clientId })])
+    );
+  });
+
+  test("6. Restaurar cliente", async () => {
+    const res = await request(app)
+      .patch(`/api/client/restaurar/${clientId}`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.nota?.archivado || false).toBe(false);
+  });
+
+  test("7. Eliminar cliente (hard delete)", async () => {
+    const res = await request(app)
+      .delete(`/api/client/${clientId}?soft=false`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toContain("eliminado");
+  });
+
+  test("8. Crear cliente sin nombre (error)", async () => {
+    const res = await request(app)
+      .post("/api/client")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ email: "invalido@fail.com" });
+    expect(res.statusCode).toBe(422);
+  });
+
+  test("9. Acceso sin token (error)", async () => {
+    const res = await request(app).get("/api/client");
+    expect(res.statusCode).toBe(401);
+  });
+});
