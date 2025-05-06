@@ -133,3 +133,186 @@ Authorization: Bearer <TOKEN_JWT>
     "codigo": "hi8zlkt5",
     "nuevaContraseña": "afsdasfdasfd"
 }
+
+### Clientes
+POST http://localhost:3000/api/client
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+  "nombre": "Panadería El Molino",
+  "nif": "B12345678",
+  "direccion": "Calle Mayor 123",
+  "email": "cliente@molino.com",
+  "telefono": "912345678"
+}
+
+### Obtener clientes
+GET http://localhost:3000/api/client
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Obtener cliente por ID
+GET http://localhost:3000/api/client/<CLIENT_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Actualizar cliente
+PUT http://localhost:3000/api/client/<CLIENT_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+  "telefono": "699999999"
+}
+
+### Archivar cliente (soft delete)
+DELETE http://localhost:3000/api/client/<CLIENT_ID>?soft=true
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Eliminar cliente (hard delete)
+DELETE http://localhost:3000/api/client/<CLIENT_ID>?soft=false
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Ver clientes archivados
+GET http://localhost:3000/api/client/archivados
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Restaurar cliente
+PATCH http://localhost:3000/api/client/restaurar/<CLIENT_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Crear proyecto
+POST http://localhost:3000/api/project
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+  "nombre": "Instalación eléctrica",
+  "descripcion": "Proyecto de obra",
+  "clientId": "<CLIENT_ID>"
+}
+
+### Obtener proyectos
+GET http://localhost:3000/api/project
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Obtener proyecto por ID
+GET http://localhost:3000/api/project/<PROJECT_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Actualizar proyecto
+PUT http://localhost:3000/api/project/<PROJECT_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+  "descripcion": "Actualización de datos"
+}
+
+### Archivar proyecto (soft delete)
+DELETE http://localhost:3000/api/project/<PROJECT_ID>?soft=true
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Eliminar proyecto (hard delete)
+DELETE http://localhost:3000/api/project/<PROJECT_ID>?soft=false
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Ver proyectos archivados
+GET http://localhost:3000/api/project/archivados
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Restaurar proyecto
+PATCH http://localhost:3000/api/project/restaurar/<PROJECT_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Crear albarán
+POST http://localhost:3000/api/deliverynotes
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+  "clientId": "<CLIENT_ID>",
+  "projectId": "<PROJECT_ID>",
+  "horas": [
+    {
+      "trabajador": "Juan Pérez",
+      "descripcion": "Montaje",
+      "horas": 5
+    }
+  ],
+  "materiales": [
+    {
+      "descripcion": "Cableado",
+      "cantidad": 30,
+      "unidad": "m"
+    }
+  ],
+  "observaciones": "Todo correcto"
+}
+
+### Obtener albaranes
+GET http://localhost:3000/api/deliverynotes
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Obtener albarán por ID
+GET http://localhost:3000/api/deliverynotes/<DELIVERYNOTE_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Actualizar albarán
+PUT http://localhost:3000/api/deliverynotes/<DELIVERYNOTE_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+{
+  "observaciones": "Actualización de nota"
+}
+
+### Firmar albarán
+POST http://localhost:3000/api/deliverynotes/firmar/<DELIVERYNOTE_ID>
+Content-Type: multipart/form-data; boundary=boundary123
+Authorization: Bearer <TOKEN_JWT>
+
+--boundary123
+Content-Disposition: form-data; name="firma"; filename="firma.png"
+Content-Type: image/png
+
+< ./firma.png
+--boundary123--
+
+### Descargar PDF del albarán
+GET http://localhost:3000/api/deliverynotes/pdf/<DELIVERYNOTE_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Archivar albarán
+DELETE http://localhost:3000/api/deliverynotes/<DELIVERYNOTE_ID>?soft=true
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Eliminar albarán (hard delete)
+DELETE http://localhost:3000/api/deliverynotes/<DELIVERYNOTE_ID>?soft=false
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Obtener albaranes archivados
+GET http://localhost:3000/api/deliverynotes/archivados
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
+
+### Restaurar albarán
+PATCH http://localhost:3000/api/deliverynotes/restaurar/<DELIVERYNOTE_ID>
+Content-Type: application/json
+Authorization: Bearer <TOKEN_JWT>
